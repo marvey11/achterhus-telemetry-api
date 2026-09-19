@@ -1,0 +1,54 @@
+{
+    // --- Python & Workspace Configuration ---
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.importFormat": "absolute",
+    // --- Testing Configuration (Pytest & uv) ---
+    // Disable legacy unittest runner in favor of pytest
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    // Use the virtualenv's pytest binary dynamically across workspace packages
+    "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest",
+    // Execute pytest from the workspace root so pytest discovers all subpackages cleanly
+    "python.testing.cwd": "${workspaceFolder}",
+    "python.testing.pytestArgs": [
+        // Auto-discover test directories across all workspace members
+        "--rootdir=${workspaceFolder}"
+    ],
+    // --- Formatting & Linting (Python / Ruff) ---
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
+    "ruff.enable": true,
+    "ruff.organizeImports": true,
+    "ruff.fixAll": true,
+    // --- Static Type Checking (Mypy) ---
+    "mypy-type-checker.enable": true,
+    "mypy-type-checker.preferDaemon": true,
+    // --- TOML Configuration (uv & pyproject.toml) ---
+    "[toml]": {
+        "editor.defaultFormatter": "tamasfe.even-better-toml",
+        "editor.formatOnSave": true
+    },
+    "evenBetterToml.formatter.alignEntries": false,
+    "evenBetterToml.schema.enabled": true,
+    // --- Monorepo Exclusions ---
+    "files.watcherExclude": {
+        "**/.venv/**": true,
+        "**/.ruff_cache/**": true,
+        "**/.mypy_cache/**": true,
+        "**/__pycache__/**": true,
+        "**/.pytest_cache/**": true
+    },
+    "search.exclude": {
+        "**/.venv": true,
+        "**/.ruff_cache": true,
+        "**/.mypy_cache": true,
+        "**/__pycache__": true,
+        "**/.pytest_cache": true
+    }
+}

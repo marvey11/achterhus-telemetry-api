@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "astral-sh.uv-vscode",
+    "charliermarsh.ruff",
+    "ms-python.mypy-type-checker",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "tamasfe.even-better-toml"
+  ]
+}

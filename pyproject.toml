@@ -1,0 +1,128 @@
+[project]
+name = "achterhus-telemetry-api"
+version = "0.1.0"
+description = "Telemetry backend for the achterhus services"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiosqlite>=0.22.1",
+    "fastapi>=0.141.1",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy[asyncio]>=2.0.54",
+    "uvicorn[standard]>=0.53.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "httpx2>=2.13.0",
+    "mypy>=2.3.1",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/telemetry"]
+
+[project.scripts]
+telemetry-api = "telemetry.main:start"
+
+# --- Tooling Configurations ---
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "I",   # isort (import order)
+    "UP",  # pyupgrade
+    "ANN", # flake8-annotations (enforces explicit type annotations everywhere)
+    "PYI", # flake8-pyi (type stub rules)
+    "TCH", # flake8-type-checking (moves type-only imports into TYPE_CHECKING blocks)
+    "FA",  # flake8-future-annotations (enforces `from __future__ import annotations`)
+    "RUF", # Ruff-specific rules (includes type-check optimizations)
+]
+fixable = ["ALL"]
+# S = flake8-bandit (Security checks)
+extend-select = ["S"]
+
+# Strict annotation configuration
+[tool.ruff.lint.flake8-annotations]
+ignore-fully-untyped = false
+suppress-dummy-args = false
+suppress-none-returning = false # Requires explicit -> None return types
+
+[tool.ruff.lint.per-file-ignores]
+# Allow 'assert' in tests (flake8-bandit rule S101)
+"tests/**/*.py" = ["S101"]
+"**/tests/**/*.py" = ["S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["telemetry"]
+
+[tool.ruff.format]
+# Use "double" or "single" quotes based on your preference
+quote-style = "double"
+
+# Ensures a trailing comma in multi-line lists/dicts (better for git diffs)
+skip-magic-trailing-comma = false
+
+# This handles the indent style (usually 4 spaces)
+indent-style = "space"
+
+[tool.mypy]
+# Enable strict mode flags
+strict = true
+
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+
+# Disallow dynamic typing & ambiguous definitions
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+# Warnings and strict quality checks
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+no_implicit_reexport = true
+strict_equality = true
+
+# Treat mypy configuration issues or unused suppressions strictly
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_functions = ["test_*"]
+addopts = "-ra -q --cov=telemetry --cov-fail-under=80 --cov-report=term-missing --cov-report=xml --cov-report=html"
+
+[tool.coverage.run]
+branch = true
+omit = ["*/tests/*", "*/__init__.py"]
+
+[tool.coverage.paths]
+source = ["src"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
