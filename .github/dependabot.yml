@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+        # Optional: restrict to minor/patch updates to avoid unexpected major breaking changes in one PR
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Optional: create a separate group for production dependencies
+      prod-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
