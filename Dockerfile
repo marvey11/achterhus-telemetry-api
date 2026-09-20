@@ -48,4 +48,4 @@ COPY --from=builder /app /app
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 
-CMD ["uvicorn", "telemetry_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "telemetry.main:app", "--host", "0.0.0.0", "--port", "8000"]
