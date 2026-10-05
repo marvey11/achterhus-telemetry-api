@@ -136,6 +136,9 @@ app = FastAPI(
     title="Telemetry API",
     version="0.2.0",
     lifespan=lifespan,
+    docs_url="/api/v1/docs",
+    redoc_url="/api/v1/redoc",
+    openapi_url="/api/v1/openapi.json",
 )
 
 app.add_middleware(
