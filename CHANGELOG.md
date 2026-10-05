@@ -9,5 +9,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Extended the API to provide for events on top of the regular service runs. In addition, provide support for [orchestrator](https://github.com/marvey11/achterhus-service-orchestrator) integration. Migrated to PostgreSQL.
-- Initial implementation with simple `POST` endpoint for telemetry data ([71ba734](https://github.com/marvey11/achterhus-telemetry-api/commit/71ba7347107bc08107aef478940f69d8dcd6c656)).
+- Extended the API to provide for events on top of the regular service runs. In addition, provide support for [orchestrator](https://github.com/marvey11/achterhus-service-orchestrator) integration. Migrated to PostgreSQL ([ae949c1](https://github.com/marvey11/achterhus-telemetry-api/commit/ae949c1e836e967a949a6275573b855ce33bc4bc)).
+- Initial implementation with simple `POST` endpoint for telemetry data ([2c56e1d](https://github.com/marvey11/achterhus-telemetry-api/commit/2c56e1df1b80c80e0ccc4829d00e19265e98acf1)).
