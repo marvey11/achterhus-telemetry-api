@@ -26,9 +26,9 @@ htmlcov/
 # Ignore local user overrides if created
 .vscode/settings.local.json
 
-# SQLite databases
-*.db
-*.db-wal
-*.db-shm
+# Local environment configuration
+.env
+.env.*
+!.env.example
 
 .prompts
