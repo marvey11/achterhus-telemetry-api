@@ -93,13 +93,16 @@ are also recorded in the event history.
 `GET /runs` returns a JSON array. It accepts:
 
 - `service_name` and `status` filters;
+- `since`, an optional ISO 8601 cutoff timestamp; only runs whose start time (or
+  registration time when they have not started) is at or after the cutoff are included;
 - `limit`, the page size (default `50`, maximum `200`);
 - `page`, a one-based page number (default `1`).
 
-For example, `/api/v1/runs?service_name=newsletter-worker&limit=25&page=2`.
+For example, `/api/v1/runs?service_name=newsletter-worker&since=2026-09-29T10:15:00Z&limit=25&page=2`.
 `GET /overview` returns the latest status, latest run time, total run count, and
-failed-run count for each service. The failed-run count includes application,
-orchestrator, timeout, and out-of-memory failures.
+failed-run count for each service. It accepts the same optional `since` cutoff and
+calculates each summary from runs at or after that time. The failed-run count includes
+application, orchestrator, timeout, and out-of-memory failures.
 
 ### Lifecycle statuses
 

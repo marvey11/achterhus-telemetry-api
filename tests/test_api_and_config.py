@@ -1,5 +1,5 @@
 import asyncio
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
@@ -221,6 +221,10 @@ def test_lifecycle_events_pagination_and_overview() -> None:
                 ),
                 session,
             )
+            first.started_at = timestamp - timedelta(days=1)
+            first.created_at = timestamp - timedelta(days=1)
+            first.updated_at = timestamp - timedelta(days=1)
+            await session.flush()
             with pytest.raises(HTTPException) as invalid_transition:
                 await update_run_status(
                     third_run_id,
@@ -245,6 +249,14 @@ def test_lifecycle_events_pagination_and_overview() -> None:
             )
             assert [run.run_id for run in filtered] == [SECOND_RUN_ID]
 
+            cutoff_page = await list_runs(
+                since=timestamp,
+                limit=1,
+                page=2,
+                db=session,
+            )
+            assert [run.service_name for run in cutoff_page] == ["newsletter-worker"]
+
             overview = await get_services_overview(db=session)
             newsletter_summary = next(
                 item for item in overview if item.service_name == "newsletter-worker"
@@ -252,6 +264,15 @@ def test_lifecycle_events_pagination_and_overview() -> None:
             assert newsletter_summary.total_runs == 2
             assert newsletter_summary.failed_runs == 1
             assert newsletter_summary.last_status == RunStatus.SUCCESS
+
+            recent_overview = await get_services_overview(since=timestamp, db=session)
+            assert [item.service_name for item in recent_overview] == [
+                "newsletter-worker",
+                "other-worker",
+            ]
+            recent_newsletter = recent_overview[0]
+            assert recent_newsletter.total_runs == 1
+            assert recent_newsletter.failed_runs == 0
 
             with pytest.raises(HTTPException) as duplicate_registration:
                 await register_run(
