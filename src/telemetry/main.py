@@ -143,7 +143,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",  # Vite local dev
+        "http://achterhus",  # Production reverse proxy
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -347,6 +350,7 @@ async def list_run_events(
 async def list_runs(
     service_name: str | None = None,
     status_filter: Annotated[RunStatus | None, Query(alias="status")] = None,
+    since: datetime | None = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     page: Annotated[int, Query(ge=1)] = 1,
     db: AsyncSession = Depends(get_db),
@@ -357,6 +361,8 @@ async def list_runs(
         stmt = stmt.where(JobRun.service_name == service_name)
     if status_filter:
         stmt = stmt.where(JobRun.status == status_filter)
+    if since is not None:
+        stmt = stmt.where(func.coalesce(JobRun.started_at, JobRun.created_at) >= since)
 
     result = await db.scalars(stmt.limit(limit).offset((page - 1) * limit))
     return [_normalise_run_dates(run) for run in result.all()]
@@ -364,9 +370,14 @@ async def list_runs(
 
 @app.get("/api/v1/overview", response_model=list[ServiceOverview])
 async def get_services_overview(
+    since: datetime | None = None,
     db: AsyncSession = Depends(get_db),
 ) -> list[ServiceOverview]:
-    service_names = await db.scalars(select(JobRun.service_name).distinct())
+    filtered_run_time = func.coalesce(JobRun.started_at, JobRun.created_at)
+    service_names_stmt = select(JobRun.service_name).distinct()
+    if since is not None:
+        service_names_stmt = service_names_stmt.where(filtered_run_time >= since)
+    service_names = await db.scalars(service_names_stmt)
     overview_list: list[ServiceOverview] = []
     failure_statuses = [
         RunStatus.FAILED,
@@ -378,21 +389,25 @@ async def get_services_overview(
     ]
 
     for name in service_names:
+        service_runs = select(JobRun).where(JobRun.service_name == name)
+        if since is not None:
+            service_runs = service_runs.where(filtered_run_time >= since)
         latest_run = await db.scalar(
-            select(JobRun)
-            .where(JobRun.service_name == name)
-            .order_by(JobRun.updated_at.desc(), JobRun.id.desc())
-            .limit(1)
+            service_runs.order_by(JobRun.updated_at.desc(), JobRun.id.desc()).limit(1)
         )
         if latest_run is None:
             continue
         total_runs = await db.scalar(
-            select(func.count(JobRun.id)).where(JobRun.service_name == name)
+            select(func.count(JobRun.id)).where(
+                JobRun.service_name == name,
+                *([filtered_run_time >= since] if since is not None else []),
+            )
         )
         failed_runs = await db.scalar(
             select(func.count(JobRun.id)).where(
                 JobRun.service_name == name,
                 JobRun.status.in_(failure_statuses),
+                *([filtered_run_time >= since] if since is not None else []),
             )
         )
         last_run_at = latest_run.started_at or latest_run.created_at
